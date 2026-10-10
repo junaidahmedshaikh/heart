@@ -1,7 +1,9 @@
 /**
- * I Love You in 35 Languages — Mathematical Heart Text Layout & Animation
- * Recreates the romantic heart with exact parametric symmetry,
- * scanline text packing, multi-script Unicode typography, and deterministic assembly.
+ * I Love You in 35 Languages — Dual Animation Heart Engine
+ * Features:
+ *  - Mode 'old': Sequential in-place neon bloom tracing the heart contours (matching reference video).
+ *  - Mode 'new': Flowing scattered assembly where words fly into place from outside.
+ *  - Symmetrical mathematical heart with scanline text-packing algorithm.
  */
 
 // 35 Authentic Translations
@@ -48,6 +50,8 @@ class HeartApp {
     this.container = document.getElementById('heart-container');
     this.tooltip = document.getElementById('tooltip');
     this.replayBtn = document.getElementById('replay-btn');
+    this.btnModeOld = document.getElementById('btn-mode-old');
+    this.btnModeNew = document.getElementById('btn-mode-new');
     
     // Canvas context for measuring text widths accurately
     this.measureCanvas = document.createElement('canvas');
@@ -55,20 +59,24 @@ class HeartApp {
 
     this.phrases = [];
     this.animationTimers = [];
-    this.isAssembled = false;
+    this.currentMode = 'new'; // 'old' or 'new'
     this.currentFontSize = 14;
 
     this.init();
   }
 
   init() {
-    // Wait for fonts to be loaded before measuring
+    // Wait for fonts to be ready before measuring
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
-        this.buildLayoutAndAnimate();
+        this.buildLayout();
+        this.startCurrentAnimation();
       });
     } else {
-      setTimeout(() => this.buildLayoutAndAnimate(), 250);
+      setTimeout(() => {
+        this.buildLayout();
+        this.startCurrentAnimation();
+      }, 250);
     }
 
     this.setupEvents();
@@ -79,10 +87,27 @@ class HeartApp {
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        this.buildLayoutAndAnimate();
+        this.buildLayout();
+        this.startCurrentAnimation();
       }, 150);
     });
 
+    // Animation Mode Switchers
+    if (this.btnModeOld) {
+      this.btnModeOld.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setMode('old');
+      });
+    }
+
+    if (this.btnModeNew) {
+      this.btnModeNew.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setMode('new');
+      });
+    }
+
+    // Replay button
     if (this.replayBtn) {
       this.replayBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -90,23 +115,42 @@ class HeartApp {
       });
     }
 
+    // Click anywhere on screen to replay
     document.body.addEventListener('click', (e) => {
-      if (e.target.closest('#replay-btn') || e.target.closest('.phrase')) return;
+      if (e.target.closest('.top-controls') || e.target.closest('.phrase')) return;
       this.replay();
     });
 
+    // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.key.toLowerCase() === 'r') {
         e.preventDefault();
         this.replay();
+      } else if (e.key === '1') {
+        this.setMode('old');
+      } else if (e.key === '2') {
+        this.setMode('new');
       }
     });
   }
 
+  setMode(mode) {
+    if (this.currentMode === mode && this.phrases.length > 0) {
+      this.replay();
+      return;
+    }
+
+    this.currentMode = mode;
+    if (this.btnModeOld && this.btnModeNew) {
+      this.btnModeOld.classList.toggle('active', mode === 'old');
+      this.btnModeNew.classList.toggle('active', mode === 'new');
+    }
+
+    this.startCurrentAnimation();
+  }
+
   /* ==========================================================================
      Mathematical Heart Boundary Solver
-     Uses parametric heart curve with smooth blend in the lower body
-     to guarantee broad shoulders and a natural, gradual bottom taper.
      ========================================================================== */
   getYRaw(t) {
     return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
@@ -116,7 +160,6 @@ class HeartApp {
     const sinT = Math.sin(t);
     const base = 16 * Math.pow(sinT, 3);
     const lin = 16 * sinT;
-    // Blend lower half (y < 5.0) smoothly to prevent premature narrowing
     const blendWeight = Math.max(0, Math.min(1, (5.0 - yVal) / 22.0));
     return base * (1 - 0.40 * blendWeight) + lin * (0.40 * blendWeight);
   }
@@ -137,9 +180,6 @@ class HeartApp {
     return (a + b) / 2;
   }
 
-  /**
-   * Returns horizontal interval(s) [xMin, xMax] inside the heart at normalized yVal.
-   */
   getScanlineIntervals(yVal) {
     const tPeak = 0.84107;
     const yMax = 11.923;
@@ -157,8 +197,8 @@ class HeartApp {
       const xOuter = this.getXRaw(tOuter, yVal);
 
       return [
-        { start: -xOuter, end: -xInner },
-        { start: xInner, end: xOuter }
+        { start: -xOuter, end: -xInner, lobe: 'left', xMax: xOuter },
+        { start: xInner, end: xOuter, lobe: 'right', xMax: xOuter }
       ];
     } else {
       // Full unified body
@@ -166,7 +206,7 @@ class HeartApp {
       const xOuter = this.getXRaw(tOuter, yVal);
 
       return [
-        { start: -xOuter, end: xOuter }
+        { start: -xOuter, end: xOuter, lobe: 'full', xMax: xOuter }
       ];
     }
   }
@@ -174,7 +214,7 @@ class HeartApp {
   /* ==========================================================================
      Scanline Text Layout Algorithm
      ========================================================================== */
-  buildLayoutAndAnimate() {
+  buildLayout() {
     this.clearAnimation();
     this.container.innerHTML = '';
     this.container.classList.remove('beating');
@@ -186,10 +226,8 @@ class HeartApp {
     const availW = Math.min(vw * 0.92, 900);
     const availH = Math.min(vh * 0.88, 720);
 
-    // Heart aspect ratio is approx 32 / 28.92 ~ 1.106
     const scaleFactor = Math.min(availW / 32, availH / 28.92);
 
-    // Dynamically calculate readable font size and row height
     this.currentFontSize = Math.max(9.5, Math.min(14, scaleFactor * 0.58));
     const rowHeight = this.currentFontSize * 1.75;
 
@@ -201,8 +239,8 @@ class HeartApp {
 
     const yMax = 11.923;
     const yMin = -17.0;
-    const totalUnitH = yMax - yMin; // 28.923
-    const yMid = (yMax + yMin) / 2; // -2.5385: true optical center
+    const totalUnitH = yMax - yMin;
+    const yMid = (yMax + yMin) / 2; // -2.5385
 
     const numRows = Math.floor((totalUnitH * scaleFactor) / rowHeight);
     const stepUnit = (totalUnitH - 1.2) / numRows;
@@ -214,7 +252,6 @@ class HeartApp {
       const yVal = (yMax - 0.6) - r * stepUnit;
       if (yVal < yMin + 0.3) break;
 
-      // Perfectly center vertically using yMid offset
       const screenY = cy - (yVal - yMid) * scaleFactor;
       const intervals = this.getScanlineIntervals(yVal);
 
@@ -225,7 +262,6 @@ class HeartApp {
 
         if (widthAvail < 24) return;
 
-        // Collect phrases fitting inside widthAvail
         const rowPhrases = [];
         let accumulatedW = 0;
         const minGap = Math.max(8, this.currentFontSize * 0.65);
@@ -244,7 +280,6 @@ class HeartApp {
           }
         }
 
-        // If none fit but interval is viable, fit at least one
         if (rowPhrases.length === 0) {
           const item = TRANSLATIONS[translationIndex % TRANSLATIONS.length];
           const textW = this.ctx.measureText(item.text).width;
@@ -256,7 +291,6 @@ class HeartApp {
 
         if (rowPhrases.length === 0) return;
 
-        // Distribute phrases across [sxStart, sxEnd]
         const totalTextWidth = rowPhrases.reduce((sum, p) => sum + p.textW, 0);
         const k = rowPhrases.length;
 
@@ -265,7 +299,6 @@ class HeartApp {
 
         if (k > 1) {
           const rawGap = (widthAvail - totalTextWidth) / (k - 1);
-          // If interval is wide and rawGap is too loose, center the row with balanced gaps
           if (rawGap > this.currentFontSize * 2.0) {
             gap = this.currentFontSize * 1.25;
             startX = sxStart + (widthAvail - (totalTextWidth + gap * (k - 1))) / 2;
@@ -278,20 +311,19 @@ class HeartApp {
           startX = sxStart + (widthAvail - totalTextWidth) / 2;
         }
 
-        // Create DOM elements and assign deterministic target & scatter coordinates
         let currentX = startX;
-        rowPhrases.forEach(p => {
+        rowPhrases.forEach((p, pIdx) => {
           const targetX = currentX;
           const targetY = screenY - this.currentFontSize / 2;
 
-          // Deterministic scattered starting position outside the heart
-          const angle = (this.phrases.length * 137.5 * Math.PI) / 180; // golden ratio dispersion
+          // Deterministic scattered starting position for New Animation
+          const angle = (this.phrases.length * 137.5 * Math.PI) / 180;
           const scatterRadius = Math.max(vw, vh) * 0.55 + ((this.phrases.length % 5) * 60);
           const scatterX = cx + Math.cos(angle) * scatterRadius;
           const scatterY = cy + Math.sin(angle) * scatterRadius;
 
           const span = document.createElement('span');
-          span.className = 'phrase scattered';
+          span.className = 'phrase';
           span.textContent = p.text;
           span.style.fontSize = `${this.currentFontSize}px`;
           span.style.left = `${targetX.toFixed(1)}px`;
@@ -301,22 +333,41 @@ class HeartApp {
             span.setAttribute('dir', 'rtl');
           }
 
-          // Initial position set via transform
-          span.style.transform = `translate(${(scatterX - targetX).toFixed(1)}px, ${(scatterY - targetY).toFixed(1)}px)`;
-
-          // Hover / Touch interaction
+          // Tooltip interactions
           span.addEventListener('mouseenter', (e) => this.showTooltip(e, p));
           span.addEventListener('mouseleave', () => this.hideTooltip());
           span.addEventListener('touchstart', (e) => this.showTooltip(e, p), { passive: true });
 
           this.container.appendChild(span);
 
-          // Distance from center for flowing assembly ordering
-          const dist = Math.hypot(targetX - cx, targetY - cy);
+          // Calculate ordering metrics:
+          // 1. Distance from center (for New Animation)
+          const distFromCenter = Math.hypot(targetX - cx, targetY - cy);
+
+          // 2. Contour / perimeter classification (for Old Animation)
+          // Is this word on the outer boundary or inside?
+          const isOuterLeft = (pIdx === 0 && interval.start < 0);
+          const isOuterRight = (pIdx === k - 1 && interval.end > 0);
+          const isPerimeter = isOuterLeft || isOuterRight || r === 0 || r >= numRows - 2;
+
+          // Sequential rank for Old Animation (traces right lobe down, left lobe up, then fills inside)
+          let oldRank = 0;
+          if (isOuterRight) {
+            // Right perimeter from top to bottom
+            oldRank = 100 + r;
+          } else if (isOuterLeft) {
+            // Left perimeter from bottom to top
+            oldRank = 200 + (numRows - r);
+          } else {
+            // Inner core filling from outside layers inwards
+            const normalizedDist = distFromCenter / (availW / 2);
+            oldRank = 300 + (1.0 - normalizedDist) * 100 + (r % 3);
+          }
 
           this.phrases.push({
             el: span,
-            dist,
+            distFromCenter,
+            oldRank,
             targetX,
             targetY,
             scatterX,
@@ -327,38 +378,86 @@ class HeartApp {
         });
       });
     }
+  }
 
-    // Stagger animation: outer phrases arrive first, flowing inwards
-    this.phrases.sort((a, b) => b.dist - a.dist);
+  startCurrentAnimation() {
+    this.clearAnimation();
+    this.container.classList.remove('beating');
 
-    this.animatePhrases();
+    if (this.currentMode === 'old') {
+      this.playOldAnimation();
+    } else {
+      this.playNewAnimation();
+    }
   }
 
   /* ==========================================================================
-     Deterministic Staggered Animation
+     OLD ANIMATION: Sequential In-Place Neon Bloom
+     Words bloom sequentially along the contour and fill in-place
      ========================================================================== */
-  animatePhrases() {
-    this.clearAnimation();
-    this.isAssembled = false;
+  playOldAnimation() {
+    // Sort phrases by oldRank (right perimeter -> left perimeter -> inner core)
+    const sorted = [...this.phrases].sort((a, b) => a.oldRank - b.oldRank);
 
-    const totalPhrases = this.phrases.length;
+    // Initial state: reset all phrases to hidden in-place
+    this.phrases.forEach(item => {
+      item.el.className = 'phrase mode-old-hidden';
+      item.el.style.transform = 'translate(0px, 0px)';
+    });
+
+    const totalPhrases = sorted.length;
+    const totalDuration = 8200; // ~8.2 seconds sequential bloom
+    const stepDelay = totalDuration / totalPhrases;
+
+    sorted.forEach((item, index) => {
+      const delay = index * stepDelay;
+      const timer = setTimeout(() => {
+        item.el.classList.remove('mode-old-hidden');
+        item.el.classList.add('mode-old-blooming');
+      }, delay);
+
+      this.animationTimers.push(timer);
+    });
+
+    // Completion: subtle gentle heartbeat
+    const completionTimer = setTimeout(() => {
+      this.container.classList.add('beating');
+    }, totalDuration + 600);
+
+    this.animationTimers.push(completionTimer);
+  }
+
+  /* ==========================================================================
+     NEW ANIMATION: Scattered Flowing Assembly
+     Words fly in smoothly from outer scattered coordinates
+     ========================================================================== */
+  playNewAnimation() {
+    // Sort phrases by distance from center (flowing from outer edge to center)
+    const sorted = [...this.phrases].sort((a, b) => b.distFromCenter - a.distFromCenter);
+
+    // Initial state: phrases placed at scattered offsets
+    this.phrases.forEach(item => {
+      item.el.className = 'phrase mode-new-scattered';
+      item.el.style.transform = `translate(${(item.scatterX - item.targetX).toFixed(1)}px, ${(item.scatterY - item.targetY).toFixed(1)}px)`;
+    });
+
+    const totalPhrases = sorted.length;
     const totalDuration = 7200; // ~7.2 seconds flowing assembly
     const stepDelay = totalDuration / totalPhrases;
 
-    this.phrases.forEach((item, index) => {
+    sorted.forEach((item, index) => {
       const delay = index * stepDelay;
       const timer = setTimeout(() => {
-        item.el.classList.remove('scattered');
-        item.el.classList.add('assembled');
+        item.el.classList.remove('mode-new-scattered');
+        item.el.classList.add('mode-new-assembled');
         item.el.style.transform = 'translate(0px, 0px)';
       }, delay);
 
       this.animationTimers.push(timer);
     });
 
-    // When all phrases have assembled, start gentle heartbeat pulse
+    // Completion: subtle gentle heartbeat
     const completionTimer = setTimeout(() => {
-      this.isAssembled = true;
       this.container.classList.add('beating');
     }, totalDuration + 1200);
 
@@ -371,19 +470,7 @@ class HeartApp {
   }
 
   replay() {
-    // Smoothly scatter back, then assemble anew
-    this.clearAnimation();
-    this.container.classList.remove('beating');
-
-    this.phrases.forEach(item => {
-      item.el.classList.remove('assembled');
-      item.el.classList.add('scattered');
-      item.el.style.transform = `translate(${(item.scatterX - item.targetX).toFixed(1)}px, ${(item.scatterY - item.targetY).toFixed(1)}px)`;
-    });
-
-    setTimeout(() => {
-      this.animatePhrases();
-    }, 400);
+    this.startCurrentAnimation();
   }
 
   showTooltip(e, p) {

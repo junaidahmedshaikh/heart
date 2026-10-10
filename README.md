@@ -1,17 +1,34 @@
 # I Love You in 35 Different Languages ❤️
 
-A symmetrical, dense mathematical heart made entirely of multilingual **“I love you”** text on a pure black background, featuring vivid neon-pink/red typography (`#ff2855`), deterministic assembly animation, and multi-script Unicode typography.
+A symmetrical, dense mathematical heart made entirely of multilingual **“I love you”** text on a pure black background, featuring vivid neon-pink/red typography (`#ff2855`), dual animation engines, and multi-script Unicode typography.
 
 ---
 
-## 🌟 Features
+## 🎬 Dual Animation Modes
 
-- **Mathematical Heart Silhouette:** Solved analytically using the parametric heart curve with smooth convex lower blend. Features two distinct rounded upper lobes, a deep central notch, broad shoulders, smooth symmetrical sides, and a gradual natural taper toward a single centered bottom tip.
-- **Scanline Text-Packing Algorithm:** The heart area is divided into horizontal scanlines. Each line's mathematical boundaries are solved using root-finding bisection, and phrases are packed with rendered text measurements (`measureText`) to guarantee a dense, solid heart silhouette with zero overlaps.
-- **35 Authentic Languages:** Includes authentic translations across Latin, Cyrillic, Greek, Arabic, Hebrew, Devanagari (Hindi), Bengali, Gurmukhi (Punjabi), Thai, and CJK (Chinese, Japanese, Korean) scripts with native RTL handling.
-- **Deterministic Assembly Animation:** Words fly in from scattered positions outside the heart with smooth ease-out deceleration (`cubic-bezier(0.16, 1, 0.3, 1)`) and opacity transitions, converging into a rock-solid, stable final heart followed by a gentle heartbeat pulse.
-- **Responsive Across All Devices:** Automatically scales to fit Desktop (1440 × 900), Laptop (1366 × 768), Tablet (768 × 1024), and Mobile (390 × 844) with optical vertical centering.
-- **Interactive Tooltip & Replay:** Hovering or touching any phrase highlights it and reveals its country flag, language name, and translation. Includes a minimalist floating Replay button and keyboard shortcut (<kbd>Space</kbd> or <kbd>R</kbd>).
+You can toggle between both animations at any time using the buttons in the top right corner:
+
+1. **Old Animation (Classic In-Place Bloom):**
+   - Faithful to the original reference video sequence.
+   - Phrases appear directly in their designated places in the heart without flying in from outside.
+   - Traces the right perimeter first down to the bottom tip, then curves up the left perimeter to the cleft, and completes by blooming the inner core layers inward.
+   - Features a bright neon flash bloom when each word spawns.
+
+2. **New Animation (Scattered Flowing Assembly):**
+   - Phrases begin at scattered positions in an orbit outside the heart.
+   - Smoothly glide and decelerate into their exact target coordinates with subtle easing and opacity transitions.
+
+Both animations finish with a gentle, romantic heartbeat breathing pulse once all phrases are assembled.
+
+---
+
+## ⌨️ Controls & Shortcuts
+
+- **Animation Switcher:** Click `Old Animation` or `New Animation` in the top bar.
+- **Keyboard `1`:** Switch to Old Animation.
+- **Keyboard `2`:** Switch to New Animation.
+- **Replay:** Click the `Replay` button, click anywhere on the black background, or press <kbd>Space</kbd> / <kbd>R</kbd>.
+- **Hover / Touch:** Hover over or touch any phrase to highlight it and see its country flag, language name, and translation.
 
 ---
 
@@ -59,10 +76,4 @@ A symmetrical, dense mathematical heart made entirely of multilingual **“I lov
 
 ## 🚀 Running the Project
 
-Open [`index.html`](file:///C:/Users/junai/All%20Program/heart/index.html) in any web browser.
-
-Or run a local server:
-```powershell
-python -m http.server 8000
-```
-Then visit `http://localhost:8000`.
+Open [`index.html`](file:///C:/Users/junai/All%20Program/heart/index.html) directly in any web browser.
