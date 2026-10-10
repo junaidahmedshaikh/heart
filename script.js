@@ -1,1225 +1,389 @@
 /**
- * Love Heart in 20 Languages
- * Pixel-accurate recreation of the Python turtle canvas animation
- * Built using Vanilla HTML5, CSS3, and JavaScript (ES6+)
+ * I Love You in 35 Languages — Mathematical Heart Text Layout & Animation
+ * Recreates the romantic heart with exact parametric symmetry,
+ * scanline text packing, multi-script Unicode typography, and deterministic assembly.
  */
 
-// 23 rows matching the reference video
-const HEART_ROWS = [
-  {
-    "rowIndex": 0,
-    "type": "split",
-    "leftW": 177,
-    "gap": 248,
-    "rightW": 177,
-    "left": [
-      {
-        "id": 0,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 6.436
-      },
-      {
-        "id": 1,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 6.628
-      }
-    ],
-    "right": [
-      {
-        "id": 2,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 0.672
-      },
-      {
-        "id": 3,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 1.249
-      }
-    ]
-  },
-  {
-    "rowIndex": 1,
-    "type": "split",
-    "leftW": 206,
-    "gap": 177,
-    "rightW": 254,
-    "left": [
-      {
-        "id": 4,
-        "text": "愛してる",
-        "lang": "Japanese",
-        "flag": "🇯🇵",
-        "delay": 6.532
-      },
-      {
-        "id": 5,
-        "text": "Aku cinta kamu",
-        "lang": "Indonesian",
-        "flag": "🇮🇩",
-        "delay": 6.724
-      }
-    ],
-    "right": [
-      {
-        "id": 6,
-        "text": "Anh yêu em",
-        "lang": "Vietnamese",
-        "flag": "🇻🇳",
-        "delay": 0.769
-      },
-      {
-        "id": 7,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 0.865
-      },
-      {
-        "id": 8,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 1.345
-      }
-    ]
-  },
-  {
-    "rowIndex": 2,
-    "type": "split",
-    "leftW": 289,
-    "gap": 94,
-    "rightW": 277,
-    "left": [
-      {
-        "id": 9,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 6.34
-      },
-      {
-        "id": 10,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 6.82
-      },
-      {
-        "id": 11,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 6.917
-      },
-      {
-        "id": 12,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 7.013
-      }
-    ],
-    "right": [
-      {
-        "id": 13,
-        "text": "Seni seviyorum",
-        "lang": "Turkish",
-        "flag": "🇹🇷",
-        "delay": 0.384
-      },
-      {
-        "id": 14,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 0.961
-      },
-      {
-        "id": 15,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 1.441
-      }
-    ]
-  },
-  {
-    "rowIndex": 3,
-    "type": "split",
-    "leftW": 313,
-    "gap": 57,
-    "rightW": 319,
-    "left": [
-      {
-        "id": 16,
-        "text": "Jag älskar dig",
-        "lang": "Swedish",
-        "flag": "🇸🇪",
-        "delay": 5.86
-      },
-      {
-        "id": 17,
-        "text": "मैं तुमसे प्यार करता हूँ",
-        "lang": "Hindi",
-        "flag": "🇮🇳",
-        "delay": 7.109
-      },
-      {
-        "id": 18,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 7.205
-      }
-    ],
-    "right": [
-      {
-        "id": 19,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 0.0
-      },
-      {
-        "id": 20,
-        "text": "Я тебе кохаю",
-        "lang": "Ukrainian",
-        "flag": "🇺🇦",
-        "delay": 0.48
-      },
-      {
-        "id": 21,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 1.153
-      },
-      {
-        "id": 22,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 1.537
-      }
-    ]
-  },
-  {
-    "rowIndex": 4,
-    "type": "split",
-    "leftW": 328,
-    "gap": 33,
-    "rightW": 330,
-    "left": [
-      {
-        "id": 23,
-        "text": "मैं तुमसे प्यार करता हूँ",
-        "lang": "Hindi",
-        "flag": "🇮🇳",
-        "delay": 5.956
-      },
-      {
-        "id": 24,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 6.052
-      },
-      {
-        "id": 25,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 7.877
-      },
-      {
-        "id": 26,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 7.301
-      }
-    ],
-    "right": [
-      {
-        "id": 27,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 0.096
-      },
-      {
-        "id": 28,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 1.057
-      },
-      {
-        "id": 29,
-        "text": "Seni seviyorum",
-        "lang": "Turkish",
-        "flag": "🇹🇷",
-        "delay": 1.921
-      },
-      {
-        "id": 30,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 1.633
-      }
-    ]
-  },
-  {
-    "rowIndex": 5,
-    "type": "split",
-    "leftW": 340,
-    "gap": 19,
-    "rightW": 333,
-    "left": [
-      {
-        "id": 31,
-        "text": "Я тебя люблю",
-        "lang": "Russian",
-        "flag": "🇷🇺",
-        "delay": 5.764
-      },
-      {
-        "id": 32,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 6.148
-      },
-      {
-        "id": 33,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 8.165
-      },
-      {
-        "id": 34,
-        "text": "I love you",
-        "lang": "English",
-        "flag": "🇬🇧",
-        "delay": 7.397
-      }
-    ],
-    "right": [
-      {
-        "id": 35,
-        "text": "Я тебя люблю",
-        "lang": "Russian",
-        "flag": "🇷🇺",
-        "delay": 0.192
-      },
-      {
-        "id": 36,
-        "text": "Aku cinta kamu",
-        "lang": "Indonesian",
-        "flag": "🇮🇩",
-        "delay": 7.685
-      },
-      {
-        "id": 37,
-        "text": "Seni seviyorum",
-        "lang": "Turkish",
-        "flag": "🇹🇷",
-        "delay": 1.729
-      }
-    ]
-  },
-  {
-    "rowIndex": 6,
-    "type": "full",
-    "width": 714,
-    "phrases": [
-      {
-        "id": 38,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 5.476
-      },
-      {
-        "id": 39,
-        "text": "Jag älskar dig",
-        "lang": "Swedish",
-        "flag": "🇸🇪",
-        "delay": 6.244
-      },
-      {
-        "id": 40,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 8.55
-      },
-      {
-        "id": 41,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 7.493
-      },
-      {
-        "id": 42,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 0.288
-      },
-      {
-        "id": 43,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 8.357
-      },
-      {
-        "id": 44,
-        "text": "I love you",
-        "lang": "English",
-        "flag": "🇬🇧",
-        "delay": 2.017
-      },
-      {
-        "id": 45,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 1.825
-      }
-    ]
-  },
-  {
-    "rowIndex": 7,
-    "type": "full",
-    "width": 702,
-    "phrases": [
-      {
-        "id": 46,
-        "text": "मैं तुमसे प्यार करता हूँ",
-        "lang": "Hindi",
-        "flag": "🇮🇳",
-        "delay": 5.572
-      },
-      {
-        "id": 47,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 7.781
-      },
-      {
-        "id": 48,
-        "text": "Я тебе кохаю",
-        "lang": "Ukrainian",
-        "flag": "🇺🇦",
-        "delay": 9.03
-      },
-      {
-        "id": 49,
-        "text": "Kocham cię",
-        "lang": "Polish",
-        "flag": "🇵🇱",
-        "delay": 7.589
-      },
-      {
-        "id": 50,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 0.576
-      },
-      {
-        "id": 51,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 8.454
-      },
-      {
-        "id": 52,
-        "text": "Anh yêu em",
-        "lang": "Vietnamese",
-        "flag": "🇻🇳",
-        "delay": 7.973
-      },
-      {
-        "id": 53,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 2.113
-      }
-    ]
-  },
-  {
-    "rowIndex": 8,
-    "type": "full",
-    "width": 678,
-    "phrases": [
-      {
-        "id": 54,
-        "text": "Я тебе кохаю",
-        "lang": "Ukrainian",
-        "flag": "🇺🇦",
-        "delay": 5.668
-      },
-      {
-        "id": 55,
-        "text": "Я тебя люблю",
-        "lang": "Russian",
-        "flag": "🇷🇺",
-        "delay": 8.646
-      },
-      {
-        "id": 56,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 9.894
-      },
-      {
-        "id": 57,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 10.279
-      },
-      {
-        "id": 58,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 9.318
-      },
-      {
-        "id": 59,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 8.069
-      },
-      {
-        "id": 60,
-        "text": "Jag älskar dig",
-        "lang": "Swedish",
-        "flag": "🇸🇪",
-        "delay": 2.209
-      }
-    ]
-  },
-  {
-    "rowIndex": 9,
-    "type": "full",
-    "width": 661,
-    "phrases": [
-      {
-        "id": 61,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 5.091
-      },
-      {
-        "id": 62,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 5.187
-      },
-      {
-        "id": 63,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 9.126
-      },
-      {
-        "id": 64,
-        "text": "愛してる",
-        "lang": "Japanese",
-        "flag": "🇯🇵",
-        "delay": 10.567
-      },
-      {
-        "id": 65,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 11.047
-      },
-      {
-        "id": 66,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 9.414
-      },
-      {
-        "id": 67,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 8.742
-      },
-      {
-        "id": 68,
-        "text": "Aku cinta kamu",
-        "lang": "Indonesian",
-        "flag": "🇮🇩",
-        "delay": 8.261
-      },
-      {
-        "id": 69,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 2.306
-      }
-    ]
-  },
-  {
-    "rowIndex": 10,
-    "type": "full",
-    "width": 625,
-    "phrases": [
-      {
-        "id": 70,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 5.283
-      },
-      {
-        "id": 71,
-        "text": "Jag älskar dig",
-        "lang": "Swedish",
-        "flag": "🇸🇪",
-        "delay": 9.222
-      },
-      {
-        "id": 72,
-        "text": "I love you",
-        "lang": "English",
-        "flag": "🇬🇧",
-        "delay": 10.471
-      },
-      {
-        "id": 73,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 11.816
-      },
-      {
-        "id": 74,
-        "text": "Kocham cię",
-        "lang": "Polish",
-        "flag": "🇵🇱",
-        "delay": 11.143
-      },
-      {
-        "id": 75,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 9.51
-      },
-      {
-        "id": 76,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 8.838
-      },
-      {
-        "id": 77,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 2.402
-      }
-    ]
-  },
-  {
-    "rowIndex": 11,
-    "type": "full",
-    "width": 584,
-    "phrases": [
-      {
-        "id": 78,
-        "text": "Seni seviyorum",
-        "lang": "Turkish",
-        "flag": "🇹🇷",
-        "delay": 5.38
-      },
-      {
-        "id": 79,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 9.991
-      },
-      {
-        "id": 80,
-        "text": "I love you",
-        "lang": "English",
-        "flag": "🇬🇧",
-        "delay": 11.624
-      },
-      {
-        "id": 81,
-        "text": "Aku cinta kamu",
-        "lang": "Indonesian",
-        "flag": "🇮🇩",
-        "delay": 12.104
-      },
-      {
-        "id": 82,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 11.72
-      },
-      {
-        "id": 83,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 9.702
-      },
-      {
-        "id": 84,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 8.934
-      },
-      {
-        "id": 85,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 2.498
-      }
-    ]
-  },
-  {
-    "rowIndex": 12,
-    "type": "full",
-    "width": 543,
-    "phrases": [
-      {
-        "id": 86,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 4.899
-      },
-      {
-        "id": 87,
-        "text": "Aku cinta kamu",
-        "lang": "Indonesian",
-        "flag": "🇮🇩",
-        "delay": 10.087
-      },
-      {
-        "id": 88,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 11.912
-      },
-      {
-        "id": 89,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 12.008
-      },
-      {
-        "id": 90,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 10.951
-      },
-      {
-        "id": 91,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 9.606
-      },
-      {
-        "id": 92,
-        "text": "Seni seviyorum",
-        "lang": "Turkish",
-        "flag": "🇹🇷",
-        "delay": 2.594
-      }
-    ]
-  },
-  {
-    "rowIndex": 13,
-    "type": "full",
-    "width": 502,
-    "phrases": [
-      {
-        "id": 93,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 4.995
-      },
-      {
-        "id": 94,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 10.183
-      },
-      {
-        "id": 95,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 11.431
-      },
-      {
-        "id": 96,
-        "text": "ฉันรักเธอ",
-        "lang": "Thai",
-        "flag": "🇹🇭",
-        "delay": 11.239
-      },
-      {
-        "id": 97,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 10.663
-      },
-      {
-        "id": 98,
-        "text": "愛してる",
-        "lang": "Japanese",
-        "flag": "🇯🇵",
-        "delay": 9.798
-      },
-      {
-        "id": 99,
-        "text": "Kocham cię",
-        "lang": "Polish",
-        "flag": "🇵🇱",
-        "delay": 2.69
-      }
-    ]
-  },
-  {
-    "rowIndex": 14,
-    "type": "full",
-    "width": 454,
-    "phrases": [
-      {
-        "id": 100,
-        "text": "Я тебе кохаю",
-        "lang": "Ukrainian",
-        "flag": "🇺🇦",
-        "delay": 4.611
-      },
-      {
-        "id": 101,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 11.528
-      },
-      {
-        "id": 102,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 11.335
-      },
-      {
-        "id": 103,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 10.759
-      },
-      {
-        "id": 104,
-        "text": "I love you",
-        "lang": "English",
-        "flag": "🇬🇧",
-        "delay": 2.882
-      },
-      {
-        "id": 105,
-        "text": "Eu te amo",
-        "lang": "Portuguese",
-        "flag": "🇵🇹",
-        "delay": 2.786
-      }
-    ]
-  },
-  {
-    "rowIndex": 15,
-    "type": "full",
-    "width": 401,
-    "phrases": [
-      {
-        "id": 106,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 4.707
-      },
-      {
-        "id": 107,
-        "text": "我爱你",
-        "lang": "Chinese",
-        "flag": "🇨🇳",
-        "delay": 10.375
-      },
-      {
-        "id": 108,
-        "text": "Σ' αγαπώ",
-        "lang": "Greek",
-        "flag": "🇬🇷",
-        "delay": 10.855
-      },
-      {
-        "id": 109,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 2.978
-      },
-      {
-        "id": 110,
-        "text": "Anh yêu em",
-        "lang": "Vietnamese",
-        "flag": "🇻🇳",
-        "delay": 3.074
-      }
-    ]
-  },
-  {
-    "rowIndex": 16,
-    "type": "full",
-    "width": 336,
-    "phrases": [
-      {
-        "id": 111,
-        "text": "Kocham cię",
-        "lang": "Polish",
-        "flag": "🇵🇱",
-        "delay": 4.803
-      },
-      {
-        "id": 112,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 3.554
-      },
-      {
-        "id": 113,
-        "text": "愛してる",
-        "lang": "Japanese",
-        "flag": "🇯🇵",
-        "delay": 3.362
-      },
-      {
-        "id": 114,
-        "text": "Te amo",
-        "lang": "Spanish",
-        "flag": "🇪🇸",
-        "delay": 3.17
-      }
-    ]
-  },
-  {
-    "rowIndex": 17,
-    "type": "full",
-    "width": 283,
-    "phrases": [
-      {
-        "id": 115,
-        "text": "Ik hou van jou",
-        "lang": "Dutch",
-        "flag": "🇳🇱",
-        "delay": 3.65
-      },
-      {
-        "id": 116,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 3.746
-      },
-      {
-        "id": 117,
-        "text": "Anh yêu em",
-        "lang": "Vietnamese",
-        "flag": "🇻🇳",
-        "delay": 3.266
-      }
-    ]
-  },
-  {
-    "rowIndex": 18,
-    "type": "full",
-    "width": 230,
-    "phrases": [
-      {
-        "id": 118,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 3.843
-      },
-      {
-        "id": 119,
-        "text": "愛してる",
-        "lang": "Japanese",
-        "flag": "🇯🇵",
-        "delay": 3.939
-      },
-      {
-        "id": 120,
-        "text": "Anh yêu em",
-        "lang": "Vietnamese",
-        "flag": "🇻🇳",
-        "delay": 3.458
-      }
-    ]
-  },
-  {
-    "rowIndex": 19,
-    "type": "full",
-    "width": 165,
-    "phrases": [
-      {
-        "id": 121,
-        "text": "Ich liebe dich",
-        "lang": "German",
-        "flag": "🇩🇪",
-        "delay": 4.035
-      },
-      {
-        "id": 122,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 4.131
-      }
-    ]
-  },
-  {
-    "rowIndex": 20,
-    "type": "full",
-    "width": 124,
-    "phrases": [
-      {
-        "id": 123,
-        "text": "Ti amo",
-        "lang": "Italian",
-        "flag": "🇮🇹",
-        "delay": 4.227
-      },
-      {
-        "id": 124,
-        "text": "Je t'aime",
-        "lang": "French",
-        "flag": "🇫🇷",
-        "delay": 4.323
-      }
-    ]
-  },
-  {
-    "rowIndex": 21,
-    "type": "full",
-    "width": 65,
-    "phrases": [
-      {
-        "id": 125,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 4.419
-      }
-    ]
-  },
-  {
-    "rowIndex": 22,
-    "type": "full",
-    "width": 53,
-    "phrases": [
-      {
-        "id": 126,
-        "text": "사랑해",
-        "lang": "Korean",
-        "flag": "🇰🇷",
-        "delay": 4.515
-      }
-    ]
-  }
+// 35 Authentic Translations
+const TRANSLATIONS = [
+  { text: "I love you", lang: "English", flag: "🇬🇧" },
+  { text: "Ich liebe dich", lang: "German", flag: "🇩🇪" },
+  { text: "Ti amo", lang: "Italian", flag: "🇮🇹" },
+  { text: "Je t’aime", lang: "French", flag: "🇫🇷" },
+  { text: "Te amo", lang: "Spanish", flag: "🇪🇸" },
+  { text: "Eu te amo", lang: "Portuguese", flag: "🇵🇹" },
+  { text: "Ik hou van jou", lang: "Dutch", flag: "🇳🇱" },
+  { text: "Σ’ αγαπώ", lang: "Greek", flag: "🇬🇷" },
+  { text: "Я тебя люблю", lang: "Russian", flag: "🇷🇺" },
+  { text: "Я тебе кохаю", lang: "Ukrainian", flag: "🇺🇦" },
+  { text: "Kocham cię", lang: "Polish", flag: "🇵🇱" },
+  { text: "Seni seviyorum", lang: "Turkish", flag: "🇹🇷" },
+  { text: "मैं तुमसे प्यार करता हूँ", lang: "Hindi", flag: "🇮🇳" },
+  { text: "میں تم سے محبت کرتا ہوں", lang: "Urdu", flag: "🇵🇰", rtl: true },
+  { text: "أحبك", lang: "Arabic", flag: "🇸🇦", rtl: true },
+  { text: "我爱你", lang: "Chinese", flag: "🇨🇳" },
+  { text: "愛してる", lang: "Japanese", flag: "🇯🇵" },
+  { text: "사랑해", lang: "Korean", flag: "🇰🇷" },
+  { text: "Anh yêu em", lang: "Vietnamese", flag: "🇻🇳" },
+  { text: "Aku cinta kamu", lang: "Indonesian", flag: "🇮🇩" },
+  { text: "Saya cintakan awak", lang: "Malay", flag: "🇲🇾" },
+  { text: "ฉันรักคุณ", lang: "Thai", flag: "🇹🇭" },
+  { text: "Mahal kita", lang: "Filipino", flag: "🇵🇭" },
+  { text: "আমি তোমাকে ভালোবাসি", lang: "Bengali", flag: "🇧🇩" },
+  { text: "ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ", lang: "Punjabi", flag: "🇮🇳" },
+  { text: "دوستت دارم", lang: "Persian", flag: "🇮🇷", rtl: true },
+  { text: "אני אוהב אותך", lang: "Hebrew", flag: "🇮🇱", rtl: true },
+  { text: "Te iubesc", lang: "Romanian", flag: "🇷🇴" },
+  { text: "Jag älskar dig", lang: "Swedish", flag: "🇸🇪" },
+  { text: "Jeg elsker dig", lang: "Danish", flag: "🇩🇰" },
+  { text: "Jeg elsker deg", lang: "Norwegian", flag: "🇳🇴" },
+  { text: "Rakastan sinua", lang: "Finnish", flag: "🇫🇮" },
+  { text: "Miluji tě", lang: "Czech", flag: "🇨🇿" },
+  { text: "Szeretlek", lang: "Hungarian", flag: "🇭🇺" },
+  { text: "Nakupenda", lang: "Swahili", flag: "🇰🇪" }
 ];
 
-class HeartAnimation {
+class HeartApp {
   constructor() {
     this.container = document.getElementById('heart-container');
     this.tooltip = document.getElementById('tooltip');
+    this.replayBtn = document.getElementById('replay-btn');
+    
+    // Canvas context for measuring text widths accurately
+    this.measureCanvas = document.createElement('canvas');
+    this.ctx = this.measureCanvas.getContext('2d');
+
     this.phrases = [];
-    this.animationTimer = null;
-    this.rafId = null;
-    this.startTime = null;
-    this.isCompleted = false;
+    this.animationTimers = [];
+    this.isAssembled = false;
+    this.currentFontSize = 14;
 
     this.init();
   }
 
   init() {
-    this.renderDOM();
-    this.setupResponsiveness();
-    this.setupInteractions();
-    this.startAnimation();
+    // Wait for fonts to be loaded before measuring
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        this.buildLayoutAndAnimate();
+      });
+    } else {
+      setTimeout(() => this.buildLayoutAndAnimate(), 250);
+    }
+
+    this.setupEvents();
   }
 
-  renderDOM() {
-    this.container.innerHTML = '';
-    this.phrases = [];
-
-    HEART_ROWS.forEach(rowSpec => {
-      const rowEl = document.createElement('div');
-      rowEl.className = 'heart-row';
-
-      if (rowSpec.type === 'split') {
-        rowEl.classList.add('split-row');
-
-        // Left lobe
-        const leftLobe = document.createElement('div');
-        leftLobe.className = 'lobe lobe-left';
-        leftLobe.style.width = `${rowSpec.leftW}px`;
-        rowSpec.left.forEach(p => {
-          const span = this.createPhraseElement(p);
-          leftLobe.appendChild(span);
-          this.phrases.push({ el: span, delay: p.delay });
-        });
-
-        // Center cleft gap
-        const gapEl = document.createElement('div');
-        gapEl.className = 'cleft-gap';
-        gapEl.style.width = `${rowSpec.gap}px`;
-
-        // Right lobe
-        const rightLobe = document.createElement('div');
-        rightLobe.className = 'lobe lobe-right';
-        rightLobe.style.width = `${rowSpec.rightW}px`;
-        rowSpec.right.forEach(p => {
-          const span = this.createPhraseElement(p);
-          rightLobe.appendChild(span);
-          this.phrases.push({ el: span, delay: p.delay });
-        });
-
-        rowEl.appendChild(leftLobe);
-        rowEl.appendChild(gapEl);
-        rowEl.appendChild(rightLobe);
-      } else {
-        // Full row (rows 6 to 22)
-        rowEl.classList.add('full-row');
-        if (rowSpec.phrases.length === 1) {
-          rowEl.classList.add('single-row');
-        }
-        rowEl.style.width = `${rowSpec.width}px`;
-
-        rowSpec.phrases.forEach(p => {
-          const span = this.createPhraseElement(p);
-          rowEl.appendChild(span);
-          this.phrases.push({ el: span, delay: p.delay });
-        });
-      }
-
-      this.container.appendChild(rowEl);
+  setupEvents() {
+    let resizeTimeout = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        this.buildLayoutAndAnimate();
+      }, 150);
     });
 
-    // Sort phrases by appearance delay
-    this.phrases.sort((a, b) => a.delay - b.delay);
-  }
+    if (this.replayBtn) {
+      this.replayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.replay();
+      });
+    }
 
-  createPhraseElement(p) {
-    const span = document.createElement('span');
-    span.className = 'phrase';
-    span.textContent = p.text;
-    span.dataset.lang = p.lang;
-    span.dataset.flag = p.flag;
-    span.dataset.text = p.text;
-
-    // Hover events for romantic language tooltip
-    span.addEventListener('mouseenter', (e) => this.showTooltip(e, p));
-    span.addEventListener('mouseleave', () => this.hideTooltip());
-    span.addEventListener('touchstart', (e) => this.showTooltip(e, p), { passive: true });
-
-    return span;
-  }
-
-  setupResponsiveness() {
-    const updateScale = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const baseW = 880;
-      const baseH = 680;
-
-      // Maintain proper margins and proportional aspect ratio
-      const scaleX = (vw * 0.94) / baseW;
-      const scaleY = (vh * 0.94) / baseH;
-      const scale = Math.min(scaleX, scaleY, 1.35);
-
-      this.container.style.setProperty('--scale', scale.toFixed(4));
-    };
-
-    window.addEventListener('resize', updateScale);
-    window.addEventListener('orientationchange', updateScale);
-    updateScale();
-  }
-
-  setupInteractions() {
-    // Click anywhere to replay animation
     document.body.addEventListener('click', (e) => {
-      // If clicking directly on a phrase when already completed, let it highlight
-      if (this.isCompleted && e.target.classList.contains('phrase')) {
-        return;
-      }
+      if (e.target.closest('#replay-btn') || e.target.closest('.phrase')) return;
       this.replay();
     });
 
-    // Keyboard shortcut to replay
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.key.toLowerCase() === 'r') {
         e.preventDefault();
         this.replay();
       }
     });
+  }
 
-    document.addEventListener('touchend', () => {
-      setTimeout(() => this.hideTooltip(), 1500);
+  /* ==========================================================================
+     Mathematical Heart Boundary Solver
+     Uses parametric heart curve with smooth blend in the lower body
+     to guarantee broad shoulders and a natural, gradual bottom taper.
+     ========================================================================== */
+  getYRaw(t) {
+    return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+  }
+
+  getXRaw(t, yVal) {
+    const sinT = Math.sin(t);
+    const base = 16 * Math.pow(sinT, 3);
+    const lin = 16 * sinT;
+    // Blend lower half (y < 5.0) smoothly to prevent premature narrowing
+    const blendWeight = Math.max(0, Math.min(1, (5.0 - yVal) / 22.0));
+    return base * (1 - 0.40 * blendWeight) + lin * (0.40 * blendWeight);
+  }
+
+  findTRoot(tMin, tMax, targetY) {
+    let a = tMin;
+    let b = tMax;
+    for (let iter = 0; iter < 28; iter++) {
+      const mid = (a + b) / 2;
+      const yMid = this.getYRaw(mid);
+      const yA = this.getYRaw(a);
+      if ((yMid - targetY) * (yA - targetY) <= 0) {
+        b = mid;
+      } else {
+        a = mid;
+      }
+    }
+    return (a + b) / 2;
+  }
+
+  /**
+   * Returns horizontal interval(s) [xMin, xMax] inside the heart at normalized yVal.
+   */
+  getScanlineIntervals(yVal) {
+    const tPeak = 0.84107;
+    const yMax = 11.923;
+    const yNotch = 5.0;
+    const yMin = -17.0;
+
+    if (yVal > yMax || yVal < yMin) return [];
+
+    if (yVal >= yNotch) {
+      // Split upper lobes
+      const tInner = this.findTRoot(0, tPeak, yVal);
+      const tOuter = this.findTRoot(tPeak, Math.PI, yVal);
+
+      const xInner = this.getXRaw(tInner, yVal);
+      const xOuter = this.getXRaw(tOuter, yVal);
+
+      return [
+        { start: -xOuter, end: -xInner },
+        { start: xInner, end: xOuter }
+      ];
+    } else {
+      // Full unified body
+      const tOuter = this.findTRoot(tPeak, Math.PI, yVal);
+      const xOuter = this.getXRaw(tOuter, yVal);
+
+      return [
+        { start: -xOuter, end: xOuter }
+      ];
+    }
+  }
+
+  /* ==========================================================================
+     Scanline Text Layout Algorithm
+     ========================================================================== */
+  buildLayoutAndAnimate() {
+    this.clearAnimation();
+    this.container.innerHTML = '';
+    this.container.classList.remove('beating');
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Viewport responsive sizing with safe boundaries
+    const availW = Math.min(vw * 0.92, 900);
+    const availH = Math.min(vh * 0.88, 720);
+
+    // Heart aspect ratio is approx 32 / 28.92 ~ 1.106
+    const scaleFactor = Math.min(availW / 32, availH / 28.92);
+
+    // Dynamically calculate readable font size and row height
+    this.currentFontSize = Math.max(9.5, Math.min(14, scaleFactor * 0.58));
+    const rowHeight = this.currentFontSize * 1.75;
+
+    const fontStyle = `700 ${this.currentFontSize}px "Noto Sans", "Noto Sans Arabic", "Noto Sans Hebrew", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Gurmukhi", "Noto Sans Thai", "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", sans-serif`;
+    this.ctx.font = fontStyle;
+
+    const cx = vw / 2;
+    const cy = vh / 2;
+
+    const yMax = 11.923;
+    const yMin = -17.0;
+    const totalUnitH = yMax - yMin; // 28.923
+    const yMid = (yMax + yMin) / 2; // -2.5385: true optical center
+
+    const numRows = Math.floor((totalUnitH * scaleFactor) / rowHeight);
+    const stepUnit = (totalUnitH - 1.2) / numRows;
+
+    this.phrases = [];
+    let translationIndex = 0;
+
+    for (let r = 0; r < numRows; r++) {
+      const yVal = (yMax - 0.6) - r * stepUnit;
+      if (yVal < yMin + 0.3) break;
+
+      // Perfectly center vertically using yMid offset
+      const screenY = cy - (yVal - yMid) * scaleFactor;
+      const intervals = this.getScanlineIntervals(yVal);
+
+      intervals.forEach(interval => {
+        const sxStart = cx + interval.start * scaleFactor;
+        const sxEnd = cx + interval.end * scaleFactor;
+        const widthAvail = sxEnd - sxStart;
+
+        if (widthAvail < 24) return;
+
+        // Collect phrases fitting inside widthAvail
+        const rowPhrases = [];
+        let accumulatedW = 0;
+        const minGap = Math.max(8, this.currentFontSize * 0.65);
+
+        while (true) {
+          const item = TRANSLATIONS[translationIndex % TRANSLATIONS.length];
+          const textW = this.ctx.measureText(item.text).width;
+          const needed = accumulatedW + (rowPhrases.length > 0 ? minGap : 0) + textW;
+
+          if (needed <= widthAvail) {
+            rowPhrases.push({ ...item, textW });
+            accumulatedW = needed;
+            translationIndex++;
+          } else {
+            break;
+          }
+        }
+
+        // If none fit but interval is viable, fit at least one
+        if (rowPhrases.length === 0) {
+          const item = TRANSLATIONS[translationIndex % TRANSLATIONS.length];
+          const textW = this.ctx.measureText(item.text).width;
+          if (textW <= widthAvail * 1.15) {
+            rowPhrases.push({ ...item, textW });
+            translationIndex++;
+          }
+        }
+
+        if (rowPhrases.length === 0) return;
+
+        // Distribute phrases across [sxStart, sxEnd]
+        const totalTextWidth = rowPhrases.reduce((sum, p) => sum + p.textW, 0);
+        const k = rowPhrases.length;
+
+        let startX = sxStart;
+        let gap = 0;
+
+        if (k > 1) {
+          const rawGap = (widthAvail - totalTextWidth) / (k - 1);
+          // If interval is wide and rawGap is too loose, center the row with balanced gaps
+          if (rawGap > this.currentFontSize * 2.0) {
+            gap = this.currentFontSize * 1.25;
+            startX = sxStart + (widthAvail - (totalTextWidth + gap * (k - 1))) / 2;
+          } else {
+            gap = rawGap;
+            startX = sxStart;
+          }
+        } else {
+          gap = 0;
+          startX = sxStart + (widthAvail - totalTextWidth) / 2;
+        }
+
+        // Create DOM elements and assign deterministic target & scatter coordinates
+        let currentX = startX;
+        rowPhrases.forEach(p => {
+          const targetX = currentX;
+          const targetY = screenY - this.currentFontSize / 2;
+
+          // Deterministic scattered starting position outside the heart
+          const angle = (this.phrases.length * 137.5 * Math.PI) / 180; // golden ratio dispersion
+          const scatterRadius = Math.max(vw, vh) * 0.55 + ((this.phrases.length % 5) * 60);
+          const scatterX = cx + Math.cos(angle) * scatterRadius;
+          const scatterY = cy + Math.sin(angle) * scatterRadius;
+
+          const span = document.createElement('span');
+          span.className = 'phrase scattered';
+          span.textContent = p.text;
+          span.style.fontSize = `${this.currentFontSize}px`;
+          span.style.left = `${targetX.toFixed(1)}px`;
+          span.style.top = `${targetY.toFixed(1)}px`;
+
+          if (p.rtl) {
+            span.setAttribute('dir', 'rtl');
+          }
+
+          // Initial position set via transform
+          span.style.transform = `translate(${(scatterX - targetX).toFixed(1)}px, ${(scatterY - targetY).toFixed(1)}px)`;
+
+          // Hover / Touch interaction
+          span.addEventListener('mouseenter', (e) => this.showTooltip(e, p));
+          span.addEventListener('mouseleave', () => this.hideTooltip());
+          span.addEventListener('touchstart', (e) => this.showTooltip(e, p), { passive: true });
+
+          this.container.appendChild(span);
+
+          // Distance from center for flowing assembly ordering
+          const dist = Math.hypot(targetX - cx, targetY - cy);
+
+          this.phrases.push({
+            el: span,
+            dist,
+            targetX,
+            targetY,
+            scatterX,
+            scatterY
+          });
+
+          currentX += p.textW + gap;
+        });
+      });
+    }
+
+    // Stagger animation: outer phrases arrive first, flowing inwards
+    this.phrases.sort((a, b) => b.dist - a.dist);
+
+    this.animatePhrases();
+  }
+
+  /* ==========================================================================
+     Deterministic Staggered Animation
+     ========================================================================== */
+  animatePhrases() {
+    this.clearAnimation();
+    this.isAssembled = false;
+
+    const totalPhrases = this.phrases.length;
+    const totalDuration = 7200; // ~7.2 seconds flowing assembly
+    const stepDelay = totalDuration / totalPhrases;
+
+    this.phrases.forEach((item, index) => {
+      const delay = index * stepDelay;
+      const timer = setTimeout(() => {
+        item.el.classList.remove('scattered');
+        item.el.classList.add('assembled');
+        item.el.style.transform = 'translate(0px, 0px)';
+      }, delay);
+
+      this.animationTimers.push(timer);
     });
+
+    // When all phrases have assembled, start gentle heartbeat pulse
+    const completionTimer = setTimeout(() => {
+      this.isAssembled = true;
+      this.container.classList.add('beating');
+    }, totalDuration + 1200);
+
+    this.animationTimers.push(completionTimer);
+  }
+
+  clearAnimation() {
+    this.animationTimers.forEach(t => clearTimeout(t));
+    this.animationTimers = [];
+  }
+
+  replay() {
+    // Smoothly scatter back, then assemble anew
+    this.clearAnimation();
+    this.container.classList.remove('beating');
+
+    this.phrases.forEach(item => {
+      item.el.classList.remove('assembled');
+      item.el.classList.add('scattered');
+      item.el.style.transform = `translate(${(item.scatterX - item.targetX).toFixed(1)}px, ${(item.scatterY - item.targetY).toFixed(1)}px)`;
+    });
+
+    setTimeout(() => {
+      this.animatePhrases();
+    }, 400);
   }
 
   showTooltip(e, p) {
@@ -1232,80 +396,9 @@ class HeartAnimation {
     if (!this.tooltip) return;
     this.tooltip.classList.remove('show');
   }
-
-  startAnimation() {
-    this.cancelRunningAnimation();
-    this.isCompleted = false;
-    this.container.classList.remove('beating');
-
-    // Reset phrase visibility
-    this.phrases.forEach(item => {
-      item.el.classList.remove('visible', 'popping');
-      item.shown = false;
-    });
-
-    // Initial brief delay before first word blooms (matches video)
-    const initialDelay = 350;
-    this.startTime = performance.now() + initialDelay;
-
-    const animate = (now) => {
-      if (now < this.startTime) {
-        this.rafId = requestAnimationFrame(animate);
-        return;
-      }
-
-      const elapsedSec = (now - this.startTime) / 1000;
-      let allShown = true;
-
-      for (let i = 0; i < this.phrases.length; i++) {
-        const item = this.phrases[i];
-        if (!item.shown) {
-          if (elapsedSec >= item.delay) {
-            item.shown = true;
-            item.el.classList.add('visible', 'popping');
-          } else {
-            allShown = false;
-          }
-        }
-      }
-
-      if (allShown) {
-        this.onAnimationComplete();
-      } else {
-        this.rafId = requestAnimationFrame(animate);
-      }
-    };
-
-    this.rafId = requestAnimationFrame(animate);
-  }
-
-  onAnimationComplete() {
-    this.isCompleted = true;
-    // Start gentle heartbeat pulse once all words are placed
-    setTimeout(() => {
-      if (this.isCompleted) {
-        this.container.classList.add('beating');
-      }
-    }, 600);
-  }
-
-  cancelRunningAnimation() {
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
-    if (this.animationTimer) {
-      clearTimeout(this.animationTimer);
-      this.animationTimer = null;
-    }
-  }
-
-  replay() {
-    this.startAnimation();
-  }
 }
 
-// Start application when DOM is ready
+// Initialize on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-  new HeartAnimation();
+  new HeartApp();
 });
